@@ -35,7 +35,7 @@ df_cost_unpv.rename({'value': 'value','variable': 'months'}, axis=1, inplace=Tru
 df_rev_group = df_rev_unpv.groupby(['Line Of Business','months'])['value'].sum().reset_index()
 df_cost_group = df_cost_unpv.groupby(['Line Of Business','months'])['value'].sum().reset_index()
 
-# agrega el mes numerico
+# agrega el mes numerico para presentar ordenada la grafica
 df_rev_group2 = df_rev_group[df_rev_group["months"] != 'Total']  
 df_rev_group2['monthnumb'] = pd.to_datetime(df_rev_group2['months'], format='%b').dt.month
 df_rev_group2['metrica'] = 'revenue' 
@@ -44,11 +44,13 @@ df_cost_group2 = df_cost_group[df_cost_group["months"] != 'Total']
 df_cost_group2['monthnumb'] = pd.to_datetime(df_cost_group2['months'], format='%b').dt.month
 df_cost_group2['metrica'] = 'cost'
 
-# hace join de las tablas para comparar por mes y linea de negocio el costo y el revenue
+# hace merge de las tablas para comparar por mes y linea de negocio el costo y el revenue
 #result =  pd.merge(df_rev_group2, df_cost_group2, how = "outer", on=["Line Of Business", "months","monthnumb"])
 result =  pd.concat([df_rev_group2, df_cost_group2],ignore_index=True)
 result=result.sort_values(by="monthnumb")
 
+
+# crea componente grafico del dashboard
 app = Dash(__name__)
 
 app.layout = html.Div([
@@ -60,15 +62,12 @@ app.layout = html.Div([
          multi = True
 
       ),
-
-
     dcc.Graph(id="line-charts-x-graph"),
-
- 
-
     
 ])
 
+
+# crea callback para interaccion en la seleccion de la linea de negocio
 @app.callback(
     Output("line-charts-x-graph", "figure"), 
     Input("line-charts-x-checklist", "value"))
